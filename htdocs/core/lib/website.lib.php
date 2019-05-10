@@ -31,7 +31,7 @@
  * @param	string		$content			Content to replace
  * @param	int			$removephppart		0=Replace PHP sections with a PHP badge. 1=Remove completely PHP sections.
  * @return	boolean							True if OK
- * @see dolWebsiteOutput for function used to replace content in a web server context
+ * @see dolWebsiteOutput() for function used to replace content in a web server context
  */
 function dolWebsiteReplacementOfLinks($website, $content, $removephppart=0)
 {
@@ -101,6 +101,7 @@ function dolWebsiteReplacementOfLinks($website, $content, $removephppart=0)
  * @param 	string	$str			String to clean
  * @param	string	$replacewith	String to use as replacement
  * @return 	string					Result string without php code
+ * @see dolKeepOnlyPhpCode()
  */
 function dolStripPhpCode($str, $replacewith='')
 {
@@ -133,6 +134,44 @@ function dolStripPhpCode($str, $replacewith='')
 	return $newstr;
 }
 
+/**
+ * Keep only PHP code part from a HTML string page.
+ *
+ * @param 	string	$str			String to clean
+ * @return 	string					Result string with php code only
+ * @see dolStripPhpCode()
+ */
+function dolKeepOnlyPhpCode($str)
+{
+    $newstr = '';
+
+    //split on each opening tag
+    $parts = explode('<?php',$str);
+    if (!empty($parts))
+    {
+        $i=0;
+        foreach($parts as $part)
+        {
+            if ($i == 0) 	// The first part is never php code
+            {
+                $i++;
+                continue;
+            }
+            $newstr.='<?php';
+            //split on closing tag
+            $partlings = explode('?>', $part, 2);
+            if (!empty($partlings))
+            {
+                $newstr .= $partlings[0].'?>';
+            }
+            else
+            {
+                $newstr .= $part.'?>';
+            }
+        }
+    }
+    return $newstr;
+}
 
 /**
  * Render a string of an HTML content and output it.
@@ -140,7 +179,7 @@ function dolStripPhpCode($str, $replacewith='')
  *
  * @param   string  $content    Content string
  * @return  void
- * @see	dolWebsiteReplacementOfLinks  for function used to replace content in the backoffice context when USEDOLIBARREDITOR is not on
+ * @see	dolWebsiteReplacementOfLinks()  for function used to replace content in the backoffice context when USEDOLIBARREDITOR is not on
  */
 function dolWebsiteOutput($content)
 {
@@ -667,6 +706,10 @@ function dolSavePageContent($filetpl, $object, $objectpage)
 	$tplcontent.= "require_once DOL_DOCUMENT_ROOT.'/core/website.inc.php';\n";
 	$tplcontent.= "ob_start();\n";
 	$tplcontent.= "// END PHP ?>\n";
+	if (! empty($conf->global->WEBSITE_FORCE_DOCTYPE_HTML5))
+	{
+	   $tplcontent.= "<!DOCTYPE html>\n";
+	}
 	$tplcontent.= '<html'.($shortlangcode ? ' lang="'.$shortlangcode.'"':'').'>'."\n";
 	$tplcontent.= '<head>'."\n";
 	$tplcontent.= '<title>'.dol_string_nohtmltag($objectpage->title, 0, 'UTF-8').'</title>'."\n";

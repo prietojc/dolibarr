@@ -1528,8 +1528,8 @@ class Product extends CommonObject
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.NotCamelCaps
     /**
-     *    Read price used by a provider.
-     *    We enter as input couple prodfournprice/qty or triplet qty/product_id/fourn_ref.
+     *  Read price used by a provider.
+     *  We enter as input couple prodfournprice/qty or triplet qty/product_id/fourn_ref.
      *  This also set some properties on product like ->buyprice, ->fourn_pu, ...
      *
      * @param  int    $prodfournprice Id du tarif = rowid table product_fournisseur_price
@@ -1537,7 +1537,8 @@ class Product extends CommonObject
      * @param  int    $product_id     Filter on a particular product id
      * @param  string $fourn_ref      Filter on a supplier price ref. 'none' to exclude ref in search.
      * @param  int    $fk_soc         If of supplier
-     * @return int                         <-1 if KO, -1 if qty not enough, 0 if OK but nothing found, id_product if OK and found. May also initialize some properties like (->ref_supplier, buyprice, fourn_pu, vatrate_supplier...)
+     * @return int                    <-1 if KO, -1 if qty not enough, 0 if OK but nothing found, id_product if OK and found. May also initialize some properties like (->ref_supplier, buyprice, fourn_pu, vatrate_supplier...)
+     * @see find_min_price_product_fournisseur()
      */
     function get_buyprice($prodfournprice, $qty, $product_id=0, $fourn_ref='', $fk_soc=0)
     {
@@ -3758,8 +3759,10 @@ class Product extends CommonObject
         if (! empty($conf->accounting->enabled) && $this->status) {
             include_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
             $label.= '<br><b>' . $langs->trans('ProductAccountancySellCode') . ':</b> '. length_accountg($this->accountancy_code_sell);
-            $label.= '<br><b>' . $langs->trans('ProductAccountancySellIntraCode') . ':</b> '. length_accountg($this->accountancy_code_sell_export);
-            $label.= '<br><b>' . $langs->trans('ProductAccountancySellExportCode') . ':</b> '. length_accountg($this->accountancy_code_sell_intra);
+            if(!empty($conf->global->MAIN_FEATURES_LEVEL)) {
+                $label.= '<br><b>' . $langs->trans('ProductAccountancySellIntraCode') . ':</b> '. length_accountg($this->accountancy_code_sell_export);
+                $label.= '<br><b>' . $langs->trans('ProductAccountancySellExportCode') . ':</b> '. length_accountg($this->accountancy_code_sell_intra);
+            }
         }
         if (! empty($conf->accounting->enabled) && $this->status_buy) {
             include_once DOL_DOCUMENT_ROOT.'/core/lib/accounting.lib.php';
@@ -4041,8 +4044,8 @@ class Product extends CommonObject
      * @param  int    $movement       0 = add, 1 = remove
      * @param  string $label          Label of stock movement
      * @param  double $price          Price to use for stock eval
-     * @param  date   $dlc            eat-by date
-     * @param  date   $dluo           sell-by date
+     * @param  integer $dlc            eat-by date
+     * @param  integer $dluo           sell-by date
      * @param  string $lot            Lot number
      * @param  string $inventorycode  Inventory code
      * @param  string $origin_element Origin element type
@@ -4810,7 +4813,7 @@ class Product extends CommonObject
     /**
      * Returns the rights used for this class
      *
-     * @return stdClass
+     * @return Object
      */
     public function getRights()
     {

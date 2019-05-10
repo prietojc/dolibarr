@@ -450,7 +450,7 @@ if (empty($reshook))
 	// Actions to send emails
 	$trigger_name='PROJECT_SENTBYMAIL';
 	$paramname='id';
-	$autocopy='MAIN_MAIL_AUTOCOPY_ORDER_TO';		// used to know the automatic BCC to add
+	$autocopy='MAIN_MAIL_AUTOCOPY_PROJECT_TO';		// used to know the automatic BCC to add
 	$trackid='proj'.$object->id;
 	include DOL_DOCUMENT_ROOT.'/core/actions_sendmails.inc.php';
 }
@@ -616,7 +616,7 @@ if ($action == 'create' && $user->rights->projet->creer)
 	// Description
 	print '<tr><td class="tdtop">'.$langs->trans("Description").'</td>';
 	print '<td>';
-	print '<textarea name="description" wrap="soft" class="centpercent" rows="'.ROWS_3.'">'.dol_escape_htmltag(GETPOST("description",'none')).'</textarea>';
+    print '<textarea name="description" wrap="soft" class="centpercent" rows="'.ROWS_3.'">'.dol_escape_htmltag(GETPOST("description", 'none'), 0, 1).'</textarea>';
 	print '</td></tr>';
 
 	// Bill time
@@ -977,7 +977,7 @@ elseif ($object->id > 0)
 		print '<div class="ficheaddleft">';
 		print '<div class="underbanner clearboth"></div>';
 
-		print '<table class="border" width="100%">';
+		print '<table class="border tableforfield" width="100%">';
 
 		// Description
 		print '<td class="titlefield tdtop">'.$langs->trans("Description").'</td><td>';
@@ -1286,6 +1286,7 @@ elseif ($object->id > 0)
 	$modelmail='project';
 	$defaulttopic='SendProjectRef';
 	$diroutput = $conf->projet->dir_output;
+	$autocopy='MAIN_MAIL_AUTOCOPY_PROJECT_TO';		// used to know the automatic BCC to add
 	$trackid = 'proj'.$object->id;
 
 	include DOL_DOCUMENT_ROOT.'/core/tpl/card_presend.tpl.php';

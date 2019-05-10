@@ -239,36 +239,37 @@ class Utils
 			dol_mkdir($conf->admin->dir_output.'/backup');
 
 			// Parameteres execution
-			$command=$cmddump;
-			if (preg_match("/\s/",$command)) $command=escapeshellarg($command);	// Use quotes on command
+			$command = $cmddump;
+			$command = preg_replace('/(\$|%)/', '', $command);                  // We removed chars that can be used to inject vars that contains space inside path of command without seeing there is a space to bypass the escapeshellarg.
+			if (preg_match("/\s/",$command)) $command=escapeshellarg($command);	// If there is spaces, we add quotes on command to be sure $command is only a program and not a program+parameters
 
 			//$param=escapeshellarg($dolibarr_main_db_name)." -h ".escapeshellarg($dolibarr_main_db_host)." -u ".escapeshellarg($dolibarr_main_db_user)." -p".escapeshellarg($dolibarr_main_db_pass);
 			$param=$dolibarr_main_db_name." -h ".$dolibarr_main_db_host;
 			$param.=" -u ".$dolibarr_main_db_user;
 			if (! empty($dolibarr_main_db_port)) $param.=" -P ".$dolibarr_main_db_port;
-			if (! GETPOST("use_transaction"))    $param.=" -l --single-transaction";
-			if (GETPOST("disable_fk") || $usedefault) $param.=" -K";
-			if (GETPOST("sql_compat") && GETPOST("sql_compat") != 'NONE') $param.=" --compatible=".escapeshellarg(GETPOST("sql_compat","alpha"));
-			if (GETPOST("drop_database"))        $param.=" --add-drop-database";
-			if (GETPOST("sql_structure") || $usedefault)
+			if (! GETPOST("use_transaction", "alpha"))    $param.=" -l --single-transaction";
+			if (GETPOST("disable_fk", "alpha") || $usedefault) $param.=" -K";
+			if (GETPOST("sql_compat", "alpha") && GETPOST("sql_compat", "alpha") != 'NONE') $param.=" --compatible=".escapeshellarg(GETPOST("sql_compat", "alpha"));
+			if (GETPOST("drop_database", "alpha"))        $param.=" --add-drop-database";
+			if (GETPOST("sql_structure", "alpha") || $usedefault)
 			{
-				if (GETPOST("drop") || $usedefault)	$param.=" --add-drop-table=TRUE";
-				else 							    $param.=" --add-drop-table=FALSE";
+				if (GETPOST("drop", "alpha") || $usedefault)	$param.=" --add-drop-table=TRUE";
+				else 				       	         		    $param.=" --add-drop-table=FALSE";
 			}
 			else
 			{
 				$param.=" -t";
 			}
-			if (GETPOST("disable-add-locks")) $param.=" --add-locks=FALSE";
-			if (GETPOST("sql_data") || $usedefault)
+			if (GETPOST("disable-add-locks", "alpha")) $param.=" --add-locks=FALSE";
+			if (GETPOST("sql_data", "alpha") || $usedefault)
 			{
 				$param.=" --tables";
-				if (GETPOST("showcolumns") || $usedefault)	 $param.=" -c";
-				if (GETPOST("extended_ins") || $usedefault) $param.=" -e";
+				if (GETPOST("showcolumns", "alpha") || $usedefault)	 $param.=" -c";
+				if (GETPOST("extended_ins", "alpha") || $usedefault) $param.=" -e";
 				else $param.=" --skip-extended-insert";
-				if (GETPOST("delayed"))	 	 $param.=" --delayed-insert";
-				if (GETPOST("sql_ignore"))	 $param.=" --insert-ignore";
-				if (GETPOST("hexforbinary") || $usedefault) $param.=" --hex-blob";
+				if (GETPOST("delayed", "alpha"))	 	 $param.=" --delayed-insert";
+				if (GETPOST("sql_ignore", "alpha"))	 $param.=" --insert-ignore";
+				if (GETPOST("hexforbinary", "alpha") || $usedefault) $param.=" --hex-blob";
 			}
 			else
 			{
@@ -436,8 +437,9 @@ class Utils
 			dol_mkdir($conf->admin->dir_output.'/backup');
 
 			// Parameteres execution
-			$command=$cmddump;
-			if (preg_match("/\s/",$command)) $command=escapeshellarg($command);	// Use quotes on command
+			$command = $cmddump;
+			$command = preg_replace('/(\$|%)/', '', $command);                  // We removed chars that can be used to inject vars that contains space inside path of command without seeing there is a space to bypass the escapeshellarg.
+			if (preg_match("/\s/",$command)) $command=escapeshellarg($command);	// If there is spaces, we add quotes on command to be sure $command is only a program and not a program+parameters
 
 			//$param=escapeshellarg($dolibarr_main_db_name)." -h ".escapeshellarg($dolibarr_main_db_host)." -u ".escapeshellarg($dolibarr_main_db_user)." -p".escapeshellarg($dolibarr_main_db_pass);
 			//$param="-F c";
@@ -613,17 +615,25 @@ class Utils
 			$FILENAMEASCII=strtolower($module).'.asciidoc';
 			$FILENAMEDOC=strtolower($module).'.html';			// TODO Use/text PDF
 
-			$dirofmodule = dol_buildpath(strtolower($module), 0).'/doc';
+			$dirofmodule = dol_buildpath(strtolower($module), 0);
+			$dirofmoduledoc = dol_buildpath(strtolower($module), 0).'/doc';
 			$dirofmoduletmp = dol_buildpath(strtolower($module), 0).'/doc/temp';
-			$outputfiledoc = $dirofmodule.'/'.$FILENAMEDOC;
-			if ($dirofmodule)
+			$outputfiledoc = $dirofmoduledoc.'/'.$FILENAMEDOC;
+			if ($dirofmoduledoc)
 			{
-				if (! dol_is_dir($dirofmodule)) dol_mkdir($dirofmodule);
+				if (! dol_is_dir($dirofmoduledoc)) dol_mkdir($dirofmoduledoc);
 				if (! dol_is_dir($dirofmoduletmp)) dol_mkdir($dirofmoduletmp);
 				if (! is_writable($dirofmoduletmp))
 				{
 					$this->error = 'Dir '.$dirofmoduletmp.' does not exists or is not writable';
 					return -1;
+				}
+
+				$conf->global->MODULEBUILDER_ASCIIDOCTOR='asciidoctor';
+				if (empty($conf->global->MODULEBUILDER_ASCIIDOCTOR))
+				{
+				    $this->error = 'Setup of module ModuleBuilder not complete';
+				    return -1;
 				}
 
 				$destfile=$dirofmoduletmp.'/'.$FILENAMEASCII;
@@ -637,6 +647,7 @@ class Utils
 					foreach ($specs as $spec)
 					{
 						if (preg_match('/notindoc/', $spec['relativename'])) continue;	// Discard file
+						if (preg_match('/example/',  $spec['relativename'])) continue;	// Discard file
 						if (preg_match('/disabled/', $spec['relativename'])) continue;	// Discard file
 
 						$pathtofile = strtolower($module).'/doc/'.$spec['relativename'];
@@ -662,17 +673,26 @@ class Utils
 					// TODO
 					fwrite($fhandle, "TODO...");
 
+
+					fwrite($fhandle, "\n\n\n== CHANGELOG...\n\n");
+
+					// TODO
+					fwrite($fhandle, "TODO...");
+
+
+
 					fclose($fhandle);
 				}
 
-				$conf->global->MODULEBUILDER_ASCIIDOCTOR='asciidoctor';
-				if (empty($conf->global->MODULEBUILDER_ASCIIDOCTOR))
-				{
-					dol_print_error('', 'Module setup not complete');
-					exit;
-				}
+				// Copy some files into temp directory
+				dol_copy($dirofmodule.'/README.md', $dirofmoduletmp.'/README.md', 0, 1);
+				dol_copy($dirofmodule.'/ChangeLog.md', $dirofmoduletmp.'/ChangeLog.md', 0, 1);
 
-				$command=$conf->global->MODULEBUILDER_ASCIIDOCTOR.' '.$destfile.' -n -o '.$dirofmodule.'/'.$FILENAMEDOC;
+				// Launch doc generation
+                $currentdir = getcwd();
+                chdir($dirofmodule);
+
+				$command=$conf->global->MODULEBUILDER_ASCIIDOCTOR.' '.$destfile.' -n -o '.$dirofmoduledoc.'/'.$FILENAMEDOC;
 				$outfile=$dirofmoduletmp.'/out.tmp';
 
 				require_once DOL_DOCUMENT_ROOT.'/core/class/utils.class.php';
@@ -683,6 +703,8 @@ class Utils
 					$this->error = $resarray['error'].' '.$resarray['output'];
 				}
 				$result = ($resarray['result'] == 0) ? 1 : 0;
+
+				chdir($currentdir);
 			}
 			else
 			{

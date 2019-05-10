@@ -184,7 +184,7 @@ class InterfaceWorkflowManager extends DolibarrTriggers
         	dol_syslog( "Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id );
 
         	// First classify billed the order to allow the proposal classify process
-        	if (! empty($conf->fournisseur->commande->enabled) && ! empty($conf->global->WORKFLOW_INVOICE_AMOUNT_CLASSIFY_BILLED_SUPPLIER_ORDER))
+        	if (! empty($conf->fournisseur->enabled) && ! empty($conf->global->WORKFLOW_INVOICE_AMOUNT_CLASSIFY_BILLED_SUPPLIER_ORDER))
         	{
         		$object->fetchObjectLinked('','order_supplier',$object->id,$object->element);
         		if (! empty($object->linkedObjects))
@@ -307,7 +307,7 @@ class InterfaceWorkflowManager extends DolibarrTriggers
         		$diff_array=array_diff_assoc($qtyordred,$qtyshipped);
         		if (count($diff_array)==0) {
         			//No diff => mean everythings is shipped
-        			$ret=$object->setStatut(Commande::STATUS_CLOSED, $object->origin_id, $object->origin);
+        			$ret=$object->setStatut(Commande::STATUS_CLOSED, $object->origin_id, $object->origin, 'ORDER_CLOSE');
         			if ($ret<0) {
         				$this->error=$object->error; $this->errors=$object->errors;
         				return $ret;
