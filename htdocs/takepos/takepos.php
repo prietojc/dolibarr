@@ -39,7 +39,7 @@ $action = GETPOST('action','alpha');
 $langs->loadLangs(array("bills","orders","commercial","cashdesk"));
 
 
-/*
+/*****
  * View
  */
 
