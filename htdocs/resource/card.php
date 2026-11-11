@@ -220,7 +220,7 @@ if (empty($reshook)) {
 		}
 	}
 
-	if ($action == 'confirm_close') {
+	if ($action == 'confirm_close' && $permissiontoadd) {
 		$res = $object->fetch($id);
 		//$object->status=Dolresource::STATUS_CANCELED;
 		//$object->update($user);
@@ -228,7 +228,7 @@ if (empty($reshook)) {
 		$action = '';
 	}
 
-	if ($action == 'confirm_reopen') {
+	if ($action == 'confirm_reopen' && $permissiontoadd) {
 		$res = $object->fetch($id);
 		//$object->status=Dolresource::STATUS_VALIDATED;
 		//$object->update($user);
@@ -236,7 +236,7 @@ if (empty($reshook)) {
 		$action = '';
 	}
 
-	if ($action == 'confirm_validate') {
+	if ($action == 'confirm_validate' && $permissiontoadd) {
 		$res = $object->fetch($id);
 		//$object->status=Dolresource::STATUS_VALIDATED;
 		//$object->update($user);
